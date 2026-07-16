@@ -1,14 +1,13 @@
 package com.example.idgs15.authorization_server;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.example.idgs15.authorization_server.entity.AppUser;
-import com.example.idgs15.authorization_server.repository.AppUserRepository;
+import com.example.idgs15.authorization_server.entity.Users;
+import com.example.idgs15.authorization_server.repository.UserRepository;
 
 @SpringBootApplication
 public class AuthorizationServerApplication {
@@ -18,10 +17,13 @@ public class AuthorizationServerApplication {
 	}
 
 	@Bean
-	public CommandLineRunner seedAdmin(AppUserRepository repository, PasswordEncoder passwordEncoder) {
+	public CommandLineRunner seedAdmin(UserRepository repository, PasswordEncoder passwordEncoder) {
 		return args -> {
 			if (!repository.existsByUsername("admin")) {
-				AppUser admin = new AppUser();
+				Users admin = new Users();
+				admin.setNombre("Administrador");
+				admin.setTelefono("0000000000");
+				admin.setCorreo("admin@example.com");
 				admin.setUsername("admin");
 				admin.setPassword(passwordEncoder.encode("admin123"));
 				admin.setRole("ADMIN");

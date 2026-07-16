@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8080
 
 spring:
   application:
@@ -16,17 +16,17 @@ spring:
       server:
         webmvc:
           routes:
-            - id: ms-a
-              uri: lb://ms-a
+            - id: authorization-server
+              uri: lb://AUTHORIZATION-SERVER
               predicates:
-                - Path=/api/entity-a/**
+                - Path=/register,/oauth2/**,/login,/.well-known/**,/h2-console/**
               filters:
                 - StripPrefix=0
 
-            - id: ms-b
-              uri: lb://ms-b
+            - id: ms-comercial
+              uri: lb://MS-COMERCIAL
               predicates:
-                - Path=/api/entity-b/**
+                - Path=/api/**
               filters:
                 - StripPrefix=0
 

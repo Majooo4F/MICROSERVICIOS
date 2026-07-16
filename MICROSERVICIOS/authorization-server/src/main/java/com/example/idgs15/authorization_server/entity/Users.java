@@ -10,14 +10,25 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "app_user", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
-public class AppUser {
+@Table(
+    name = "users",
+    schema = "auth",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "correo")
+    }
+)
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String nombre;
+    private String telefono;
+    private String correo;
+
     private String username;
     private String password; // ya viene encriptada antes de guardar
-    private String role;     // "ADMIN" o "USER"
+    private String role;     
 }
