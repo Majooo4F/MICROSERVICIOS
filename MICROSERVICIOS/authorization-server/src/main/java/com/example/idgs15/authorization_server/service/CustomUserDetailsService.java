@@ -9,18 +9,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.idgs15.authorization_server.entity.AppUser;
-import com.example.idgs15.authorization_server.repository.AppUserRepository;
+import com.example.idgs15.authorization_server.entity.Users;
+import com.example.idgs15.authorization_server.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private AppUserRepository repository;
+    private UserRepository repository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUser appUser = repository.findByUsername(username)
+        Users appUser = repository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         return org.springframework.security.core.userdetails.User.builder()

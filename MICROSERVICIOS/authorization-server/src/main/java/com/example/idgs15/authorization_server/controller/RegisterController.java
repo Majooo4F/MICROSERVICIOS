@@ -1,39 +1,46 @@
 package com.example.idgs15.authorization_server.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.idgs15.authorization_server.dto.RegisterRequest;
-import com.example.idgs15.authorization_server.entity.AppUser;
-import com.example.idgs15.authorization_server.repository.AppUserRepository;
+import com.example.idgs15.authorization_server.entity.Users;
+import com.example.idgs15.authorization_server.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/register")
+@RequiredArgsConstructor
 public class RegisterController {
 
-    @Autowired
-    private AppUserRepository repository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
 
-    @PostMapping
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        if (repository.existsByUsername(request.getUsername())) {
-            return ResponseEntity.badRequest().body("El usuario ya existe");
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity.badRequest().body("El nombre de usuario ya existe");
         }
 
-        AppUser newUser = new AppUser();
-        newUser.setUsername(request.getUsername());
-        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setRole("USER"); // por seguridad, el registro público siempre da rol USER, nunca ADMIN
+        if (userRepository.existsByCorreo(request.getCorreo())) {
+            return ResponseEntity.badRequest().body("El correo ya está registrado");
+        }
 
-        repository.save(newUser);
+        if (!"USER".equals(request.getRole()) && !"ADMIN".equals(request.getRole())) {
+            return ResponseEntity.badRequest().body("Rol inválido, debe ser USER o ADMIN");
+        }
+
+        Users user = new Users();
+        user.setNombre(request.getNombre());
+        user.setTelefono(request.getTelefono());
+        user.setCorreo(request.getCorreo());
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
+        userRepository.save(user);
 
         return ResponseEntity.ok("Usuario registrado correctamente");
     }
