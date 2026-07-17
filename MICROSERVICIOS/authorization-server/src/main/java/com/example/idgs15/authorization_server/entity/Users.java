@@ -30,5 +30,6 @@ public class Users {
 
     private String username;
     private String password; // ya viene encriptada antes de guardar
-    private String role;     
+    private String role;    
+     
 }
