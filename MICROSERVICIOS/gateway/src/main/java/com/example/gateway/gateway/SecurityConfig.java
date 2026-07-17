@@ -33,7 +33,7 @@ public class SecurityConfig {
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE); 
         return bean;
     }
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -45,7 +45,23 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login", "/.well-known/**").permitAll()
                 .requestMatchers("/register").hasRole("ADMIN")
 
-                // Cotizaciones
+                // ========================================================
+                // RUTAS DE TU COMPAÑERO (SERVICIOS Y CITAS)
+                // ========================================================
+                // Permitir acceso a los endpoints de servicios
+                .requestMatchers(HttpMethod.GET, "/api/public/servicios/**").permitAll() 
+                .requestMatchers(HttpMethod.POST, "/api/public/citas-servicios").permitAll()
+                // CRUD de administración de servicios es solo para ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/public/servicios").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/public/servicios/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/public/servicios/**").hasRole("ADMIN")
+                // Solo el ADMIN puede ver el listado de agendas de los clientes
+                .requestMatchers(HttpMethod.GET, "/api/public/citas-servicios").hasRole("ADMIN")
+
+                // ========================================================
+                // TUS RUTAS (COTIZACIONES, VEHÍCULOS, NOTICIAS, PROMOCIONES)
+                // ========================================================
+                // Cotizaciones: crear es público, consultar/actualizar es solo Admin
                 .requestMatchers(HttpMethod.POST, "/api/cotizaciones").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/cotizaciones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/cotizaciones/**").hasRole("ADMIN")
