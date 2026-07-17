@@ -47,6 +47,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/entity-a/**", "/api/entity-b/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/entity-a/**", "/api/entity-b/**").hasRole("ADMIN")
 
+                // Mis rutas mark
+                //Público cualquiera lo puede ver
+                .requestMatchers(HttpMethod.GET, "/api/comercial/contacto").permitAll()
+                // Solo Admin puede actualizar los datos de contacto
+                .requestMatchers(HttpMethod.PUT, "/api/comercial/contacto").hasRole("ADMIN")
+                
+
                 // Todo lo demás requiere sesión válida
                 .anyRequest().authenticated()
             )
