@@ -116,4 +116,17 @@ public class ServicioAutomotrizService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+    // Actualizar el estado de una cita (PENDIENTE o REALIZADO)
+    public void actualizarEstadoCita(Long id, String nuevoEstado) {
+        if (!nuevoEstado.equals("PENDIENTE") && !nuevoEstado.equals("REALIZADO")) {
+            throw new IllegalArgumentException("El estado especificado no es válido. Solo se permite PENDIENTE o REALIZADO.");
+        }
+
+        CitaServicio cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("La cita especificada no existe."));
+
+        cita.setEstado(nuevoEstado);
+        citaRepository.save(cita);
+    }
 }
