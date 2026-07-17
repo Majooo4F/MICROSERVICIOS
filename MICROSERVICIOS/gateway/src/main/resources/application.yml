@@ -25,6 +25,13 @@ spring:
               filters:
                 - StripPrefix=0
 
+            - id: ms-cotizaciones
+              uri: lb://MS-COTIZACIONES
+              predicates:
+                - Path=/api/public/cotizaciones-vehiculos/**
+              filters:
+                - StripPrefix=0
+
             - id: ms-comercial
               uri: lb://MS-COMERCIAL
               predicates:

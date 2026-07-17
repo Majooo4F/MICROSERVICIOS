@@ -36,6 +36,13 @@ public class VehiculoService {
         return toDTO(vehiculo);
     }
 
+    // Consulta en lote (ej. para que ms-cotizaciones resuelva varios vehículos con una sola llamada)
+    public List<VehiculoDTO> obtenerPorIds(List<Long> ids) {
+        return vehiculoRepository.findAllById(ids).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     // E1HU1: Crear registros de nuevos vehículos
     public VehiculoDTO crear(VehiculoDTO dto) {
         Vehiculo vehiculo = toEntity(dto, new Vehiculo());

@@ -38,6 +38,13 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculoService.obtenerPorId(id));
     }
 
+    // Consulta en lote: usado por otros microservicios (ej. ms-cotizaciones) para
+    // resolver varios vehículos de un jalón en vez de llamar uno por uno
+    @PostMapping("/by-ids")
+    public ResponseEntity<List<VehiculoDTO>> obtenerPorIds(@RequestBody List<Long> ids) {
+        return ResponseEntity.ok(vehiculoService.obtenerPorIds(ids));
+    }
+
     // E1HU1: Crear registros de nuevos vehículos (CRUD)
     @PostMapping
     public ResponseEntity<VehiculoDTO> crear(@RequestBody VehiculoDTO dto) {

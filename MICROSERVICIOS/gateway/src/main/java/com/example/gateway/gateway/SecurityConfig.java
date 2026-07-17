@@ -49,7 +49,7 @@ public class SecurityConfig {
                 // RUTAS DE TU COMPAÑERO (SERVICIOS Y CITAS)
                 // ========================================================
                 // Permitir acceso a los endpoints de servicios
-                .requestMatchers(HttpMethod.GET, "/api/public/servicios/**").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/public/servicios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/public/citas-servicios").permitAll()
                 // CRUD de administración de servicios es solo para ADMIN
                 .requestMatchers(HttpMethod.POST, "/api/public/servicios").hasRole("ADMIN")
@@ -71,6 +71,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/vehiculos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/vehiculos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/vehiculos/**").hasRole("ADMIN")
+
+                // Cotizaciones de vehículos: solicitar es público, consultar/actualizar es solo Admin
+                .requestMatchers(HttpMethod.POST, "/api/public/cotizaciones-vehiculos").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/public/cotizaciones-vehiculos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/public/cotizaciones-vehiculos/**").hasRole("ADMIN")
 
                 // NUESTRAS RUTAS: Públicas para leer, protegidas para escribir
                 .requestMatchers(HttpMethod.GET, "/api/noticias/**", "/api/promociones/**", "/api/imagenes/**").permitAll()

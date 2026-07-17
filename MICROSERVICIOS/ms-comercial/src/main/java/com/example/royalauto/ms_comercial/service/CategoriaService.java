@@ -39,4 +39,3 @@ public class CategoriaService {
         return dto;
     }
 }
-
