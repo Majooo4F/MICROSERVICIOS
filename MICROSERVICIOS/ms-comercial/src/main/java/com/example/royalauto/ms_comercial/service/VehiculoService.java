@@ -4,9 +4,11 @@ import com.example.royalauto.ms_comercial.dto.VehiculoDTO;
 import com.example.royalauto.ms_comercial.entity.Categoria;
 import com.example.royalauto.ms_comercial.entity.ImagenVehiculo;
 import com.example.royalauto.ms_comercial.entity.Marca;
+import com.example.royalauto.ms_comercial.entity.Promocion;
 import com.example.royalauto.ms_comercial.entity.Vehiculo;
 import com.example.royalauto.ms_comercial.repository.CategoriaRepository;
 import com.example.royalauto.ms_comercial.repository.MarcaRepository;
+import com.example.royalauto.ms_comercial.repository.PromocionRepository;
 import com.example.royalauto.ms_comercial.repository.VehiculoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class VehiculoService {
     private final VehiculoRepository vehiculoRepository;
     private final MarcaRepository marcaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final PromocionRepository promocionRepository;
 
     // E1HU3: Visualizar el catálogo de autos
     public List<VehiculoDTO> listarTodos() {
@@ -138,6 +141,14 @@ public class VehiculoService {
             dto.setImagenUrl("https://via.placeholder.com/400x220?text=Sin+Foto");
         }
         // ---
+
+        // --- Promoción activa (si existe) ---
+        promocionRepository.findByVehiculo_IdAndActivoTrue(vehiculo.getId()).ifPresent(promo -> {
+            dto.setPromocionId(promo.getId());
+            dto.setTipoDescuento(promo.getTipoDescuento());
+            dto.setValorDescuento(promo.getValorDescuento());
+            dto.setPrecioFinal(promo.getPrecioPromocion());
+        });
 
         return dto;
     }
