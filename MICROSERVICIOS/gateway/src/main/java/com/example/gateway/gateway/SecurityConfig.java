@@ -18,6 +18,9 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final String[] STAFF_ROLES = {"ADMIN", "SERVICIO", "VENTAS", "MARKETING"};
+
     @Bean
     public FilterRegistrationBean<CorsFilter> customCorsFilter() {
         CorsConfiguration config = new CorsConfiguration();
@@ -30,71 +33,71 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
 
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE); 
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // APAGAMOS EL CORS DE SPRING SECURITY para que no interfiera con el filtro maestro de arriba
+            // Apagamos el CORS de Spring Security: el filtro maestro de arriba ya lo maneja
             .cors(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login", "/.well-known/**").permitAll()
-                .requestMatchers("/register").hasRole("ADMIN")
+
+                // /register: cualquier miembro del staff puede dar de alta a otro
+                .requestMatchers("/register").hasAnyRole(STAFF_ROLES)
 
                 // ========================================================
-                // RUTAS DE TU COMPAÑERO (SERVICIOS Y CITAS)
+                // RUTAS DE SERVICIOS Y CITAS
                 // ========================================================
-                // Permitir acceso a los endpoints de servicios
                 .requestMatchers(HttpMethod.GET, "/api/public/servicios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/public/citas-servicios").permitAll()
-                // CRUD de administración de servicios es solo para ADMIN
-                .requestMatchers(HttpMethod.POST, "/api/public/servicios").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/public/servicios/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/public/servicios/**").hasRole("ADMIN")
-                // Solo el ADMIN puede ver el listado de agendas de los clientes
-                .requestMatchers(HttpMethod.GET, "/api/public/citas-servicios").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/public/servicios").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/public/servicios/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.DELETE, "/api/public/servicios/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.GET, "/api/public/citas-servicios").hasAnyRole(STAFF_ROLES)
 
                 // ========================================================
-                // TUS RUTAS (COTIZACIONES, VEHÍCULOS, NOTICIAS, PROMOCIONES)
+                // COTIZACIONES Y VEHÍCULOS
                 // ========================================================
-                // Cotizaciones: crear es público, consultar/actualizar es solo Admin
                 .requestMatchers(HttpMethod.POST, "/api/cotizaciones").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cotizaciones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/cotizaciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/cotizaciones/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/cotizaciones/**").hasAnyRole(STAFF_ROLES)
 
-                // Catálogo de vehículos
                 .requestMatchers(HttpMethod.GET, "/api/vehiculos/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/vehiculos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/vehiculos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/vehiculos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/vehiculos/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/vehiculos/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.DELETE, "/api/vehiculos/**").hasAnyRole(STAFF_ROLES)
 
-                // Cotizaciones de vehículos: solicitar es público, consultar/actualizar es solo Admin
+                // Cotizaciones de vehículos (variante /api/public/...)
                 .requestMatchers(HttpMethod.POST, "/api/public/cotizaciones-vehiculos").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/public/cotizaciones-vehiculos").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/public/cotizaciones-vehiculos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/public/cotizaciones-vehiculos").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/public/cotizaciones-vehiculos/**").hasAnyRole(STAFF_ROLES)
 
-                // NUESTRAS RUTAS: Públicas para leer, protegidas para escribir
+                // ========================================================
+                // NOTICIAS, PROMOCIONES, IMÁGENES
+                // ========================================================
                 .requestMatchers(HttpMethod.GET, "/api/noticias/**", "/api/promociones/**", "/api/imagenes/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/noticias/**", "/api/promociones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/noticias/**", "/api/promociones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/noticias/**", "/api/promociones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/noticias/**", "/api/promociones/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/noticias/**", "/api/promociones/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.DELETE, "/api/noticias/**", "/api/promociones/**").hasAnyRole(STAFF_ROLES)
 
-                // Otras entidades genéricas
-                .requestMatchers(HttpMethod.GET, "/api/entity-a/**", "/api/entity-b/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/entity-a/**", "/api/entity-b/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/entity-a/**", "/api/entity-b/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/entity-a/**", "/api/entity-b/**").hasRole("ADMIN")
-
-                // Mis rutas mark
-                //Público cualquiera lo puede ver
+                // ========================================================
+                // CONTACTO
+                // ========================================================
                 .requestMatchers(HttpMethod.GET, "/api/comercial/contacto").permitAll()
-                // Solo Admin puede actualizar los datos de contacto
-                .requestMatchers(HttpMethod.PUT, "/api/comercial/contacto").hasRole("ADMIN")
-                
+                .requestMatchers(HttpMethod.PUT, "/api/comercial/contacto").hasAnyRole(STAFF_ROLES)
+
+                // ========================================================
+                // ENTIDADES GENÉRICAS
+                // ========================================================
+                .requestMatchers(HttpMethod.GET, "/api/entity-a/**", "/api/entity-b/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.POST, "/api/entity-a/**", "/api/entity-b/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.PUT, "/api/entity-a/**", "/api/entity-b/**").hasAnyRole(STAFF_ROLES)
+                .requestMatchers(HttpMethod.DELETE, "/api/entity-a/**", "/api/entity-b/**").hasAnyRole(STAFF_ROLES)
 
                 // Todo lo demás requiere sesión válida
                 .anyRequest().authenticated()
